@@ -41,6 +41,8 @@ namespace SystemInfoCollector
         //seperate declaration of return variables
         private string manufacturerName;
         private string listOfDrives;
+        private string videoCardName;
+        private string _getOSVersion;
 
         #endregion
 
@@ -157,6 +159,132 @@ namespace SystemInfoCollector
 
 
 
+
+        #region IPAddress
+
+        public string getIpAddress()
+        {
+            System.Net.IPHostEntry host;
+            string localIP = null;
+            try
+            {
+                host =
+                    System.Net.Dns.GetHostEntry(
+                    System.Net.Dns.GetHostName());
+
+                foreach (System.Net.IPAddress ip 
+                    in host.AddressList)
+                {
+                    if (ip.AddressFamily.ToString()
+                        == "InterNetwork")
+                    {
+                        localIP = ip.ToString();
+                    }
+                }
+            }
+
+            catch (System.Net.Sockets.SocketException eXception)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    eXception.Message + "/n"
+                    + eXception.NativeErrorCode + "/n"
+                    + eXception.SocketErrorCode + "\n"
+                    + eXception.Source + "\n"
+                    + eXception.ErrorCode + "\n"
+                    + eXception.Data + "\n"
+                    + eXception.HelpLink + "\n"
+                    + eXception.InnerException + "\n"
+                    + eXception.StackTrace + "\n"
+                    + eXception.TargetSite + "\n"
+                    );
+
+            }
+            return localIP;
+        }
+
+        #endregion
+
+        #region DisplayIPAddress
+
+        public void DisplayIPAddresses()
+        {
+
+            Console.WriteLine("\r\n****************************");
+            Console.WriteLine("     IPAddresses");
+            Console.WriteLine("****************************");
+
+
+            StringBuilder sb = new StringBuilder();
+            // Get a list of all network interfaces (usually one per network card, dialup, and VPN connection)     
+            System.Net.NetworkInformation.NetworkInterface[] networkInterfaces = 
+                System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (System.Net.NetworkInformation.NetworkInterface 
+                network in networkInterfaces)
+            {
+
+                if (network.OperationalStatus == 
+                    System.Net.NetworkInformation.OperationalStatus.Up)
+                {
+                    if (network.NetworkInterfaceType == 
+                        System.Net.NetworkInformation.NetworkInterfaceType.Tunnel) continue;
+                    if (network.NetworkInterfaceType == 
+                        System.Net.NetworkInformation.NetworkInterfaceType.Tunnel) continue;
+                    //GatewayIPAddressInformationCollection GATE = network.GetIPProperties().GatewayAddresses;
+                    // Read the IP configuration for each network   
+
+                    System.Net.NetworkInformation.IPInterfaceProperties 
+                        properties = 
+                        network.GetIPProperties();
+                    //discard those who do not have a real gateaway 
+                    if (properties.GatewayAddresses.Count > 0)
+                    {
+                        bool good = false;
+                        foreach (
+                            System.Net.NetworkInformation.GatewayIPAddressInformation 
+                                gInfo in properties.GatewayAddresses)
+                        {
+                            //not a true gateaway (VmWare Lan)
+                            if (!gInfo.Address.ToString().Equals("0.0.0.0"))
+                            {
+                                sb.AppendLine(
+                                    " GATEAWAY " + gInfo.Address.ToString());
+                                good = true;
+                                break;
+                            }
+                        }
+                        if (!good)
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                    // Each network interface may have multiple IP addresses       
+                    foreach (System.Net.NetworkInformation.IPAddressInformation address in properties.UnicastAddresses)
+                    {
+                        // We're only interested in IPv4 addresses for now       
+                        if (address.Address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork) continue;
+
+                        // Ignore loopback addresses (e.g., 127.0.0.1)    
+                        if (System.Net.IPAddress.IsLoopback(address.Address)) continue;
+
+                        if (!address.IsDnsEligible) continue;
+                        if (address.IsTransient) continue;
+
+                        sb.AppendLine(address.Address.ToString() + " (" + network.Name + ") nType:" + network.NetworkInterfaceType.ToString());
+                    }
+                }
+            }
+            Console.WriteLine(sb.ToString());
+        }
+
+
+        #endregion
+
+
         //WMI - Queries
 
         #region SystemManufacturer
@@ -201,6 +329,88 @@ namespace SystemInfoCollector
 
 
 
+        #region VideoCardName
+
+        public string getVideoCardName()
+        {
+            connectionOptions.Impersonation =
+                       System.Management.ImpersonationLevel.Impersonate;
+            scope.Connect();
+            try
+            {
+                //Query system for Operating System information
+                ObjectQuery query = new ObjectQuery(
+                    "SELECT * FROM Win32_VideoController");
+                ManagementObjectSearcher searcher =
+                    new ManagementObjectSearcher(scope, query);
+
+                ManagementObjectCollection queryCollection =
+                    searcher.Get();
+
+                foreach (ManagementObject m in queryCollection)
+                {
+                    // get videoCardName
+                    videoCardName =
+                        m["Caption"].ToString();
+
+                }
+            }
+
+            catch (ManagementException exception)
+            {
+                videoCardName = "Unable to Read";
+                System.Diagnostics.Debug.WriteLine(exception);
+            }
+
+
+            return videoCardName;
+
+        }
+
+
+        #endregion
+
+
+        #region OS Version
+
+        public string getOSVersion()
+        {
+            connectionOptions.Impersonation =
+                       System.Management.ImpersonationLevel.Impersonate;
+            scope.Connect();
+            try
+            {
+                //Query system for Operating System information
+                ObjectQuery query = new ObjectQuery(
+                    "SELECT * FROM Win32_OperatingSystem");
+                ManagementObjectSearcher searcher =
+                    new ManagementObjectSearcher(scope, query);
+
+                ManagementObjectCollection queryCollection =
+                    searcher.Get();
+
+                foreach (ManagementObject m in queryCollection)
+                {
+                    // get  getOSVersion
+                    _getOSVersion =
+                        m["Caption"].ToString() + "Service Pack " + m["ServicePackMajorVersion"].ToString();
+
+                }
+            }
+
+            catch (ManagementException exception)
+            {
+                _getOSVersion = "Unable to Read";
+                System.Diagnostics.Debug.WriteLine(exception);
+            }
+
+
+            return _getOSVersion;
+
+        }
+
+
+        #endregion
 
 
 
