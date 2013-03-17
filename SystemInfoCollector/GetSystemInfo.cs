@@ -43,6 +43,7 @@ namespace SystemInfoCollector
         private string listOfDrives;
         private string videoCardName;
         private string _getOSVersion;
+        private string _SystemUptime;
 
         #endregion
 
@@ -412,7 +413,55 @@ namespace SystemInfoCollector
 
         #endregion
 
+        #region SystemUptime
 
+        public string getSystemUptime()
+        {
+            connectionOptions.Impersonation =
+                       System.Management.ImpersonationLevel.Impersonate;
+            scope.Connect();
+
+            
+
+            try
+            {
+                //Query system for Operating System information
+                ObjectQuery query = new ObjectQuery(
+                    "SELECT * FROM Win32_OperatingSystem");
+                ManagementObjectSearcher searcher =
+                    new ManagementObjectSearcher(scope, query);
+
+                ManagementObjectCollection queryCollection =
+                    searcher.Get();
+
+                foreach (ManagementObject m in queryCollection)
+                {
+                    // get  SystemUptime
+                    string _SUptime =
+                        m["LastBootUpTime"].ToString();
+
+                    DateTime System_Uptime =
+                System.Management.ManagementDateTimeConverter.ToDateTime(_SUptime);
+
+                    _SystemUptime = System_Uptime.ToString();
+                }
+            }
+
+            catch (ManagementException exception)
+            {
+                _SystemUptime = "Unable to Read";
+                System.Diagnostics.Debug.WriteLine(exception);
+            }
+
+
+
+
+            return _SystemUptime;
+
+        }
+
+
+        #endregion
 
 
 

@@ -67,6 +67,8 @@ namespace SystemInfoCollector
 
             Console.WriteLine(
                  infoCollector.getOSVersion());
+
+            Console.WriteLine(infoCollector.getSystemUptime());
                 
 
         }
