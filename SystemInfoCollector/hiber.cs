@@ -678,6 +678,7 @@ namespace SystemInfoCollector
          /// </returns>
          public string getPowerCapabilities()
          {
+            
              string HiberEnabled = string.Empty;
              bool result = GetPwrCapabilities(out _SYSTEM_POWER_CAPABILITIES);
              int errorOfFunc = Convert.ToInt32(
