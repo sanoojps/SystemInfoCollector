@@ -80,14 +80,17 @@ namespace SystemInfoCollector
                 _installutilLaunchprocess.Start();
             }
 
-            catch
+            catch(Exception eXception)
             {
-
+                System.Diagnostics.Debug.WriteLine(
+                    eXception.Message + "\n"
+                   + eXception.StackTrace + "\n"
+                   );
             }
 
             finally
             {
-
+                _installutilLaunchprocess.Dispose();
             }
         }
 

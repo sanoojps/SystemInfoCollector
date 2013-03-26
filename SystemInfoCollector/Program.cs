@@ -69,7 +69,12 @@ namespace SystemInfoCollector
                  infoCollector.getOSVersion());
 
             Console.WriteLine(infoCollector.getSystemUptime());
-                
+
+            hiber _hiber = new hiber();
+
+            Console.WriteLine(_hiber.getPowerCapabilities().ToString());
+
+
 
         }
 
