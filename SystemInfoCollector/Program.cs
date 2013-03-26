@@ -74,6 +74,8 @@ namespace SystemInfoCollector
 
             Console.WriteLine(_hiber.getPowerCapabilities().ToString());
 
+            Console.WriteLine(_hiber.isHibernationEnabled());
+
 
 
         }

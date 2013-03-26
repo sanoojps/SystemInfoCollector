@@ -15,11 +15,12 @@ namespace SystemInfoCollector
     public class GetSystemInfo
     {
 
-        [DllImport("shell32.dll")]
-        public static extern bool IsUserAnAdmin();
+       
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         #region WMI
 
         private static ConnectionOptions connectionOptions = 
@@ -39,12 +40,7 @@ namespace SystemInfoCollector
             new ManagementScope(ManagementPath, connectionOptions);
 
         //seperate declaration of return variables
-        private string manufacturerName;
-        private string listOfDrives;
-        private string videoCardName;
-        private string _getOSVersion;
-        private string _SystemUptime;
-
+      
         #endregion
 
 
@@ -53,8 +49,15 @@ namespace SystemInfoCollector
         {
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         #region CheckIfAdmin
+
+        [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)] 
+        public static extern bool IsUserAnAdmin();
 
         public void CheckIfAdmin()
         {
@@ -79,7 +82,10 @@ namespace SystemInfoCollector
         #endregion
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         #region UserName
 
         public string getUserName()
@@ -93,7 +99,10 @@ namespace SystemInfoCollector
         #endregion
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         #region ComputerName
 
         public string getComputerName()
@@ -107,7 +116,10 @@ namespace SystemInfoCollector
         #endregion
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         #region SystemPartition
 
         public string getSystemPartition()
@@ -123,12 +135,21 @@ namespace SystemInfoCollector
 
         #endregion
 
-
+        /// <summary>
+        /// getListOfDrives
+        /// returns both list of drives and and number of drives
+        /// </summary>
+        /// <param name="listODrives"></param>
+        /// <returns>
+        /// listOfDrives
+        /// </returns>
         #region '<pNumberOfPartitions>'
 
-        //returns both list of drives and and number of drives
+        
         public int getListOfDrives(out string listODrives)
         {
+            //returns both list of drives and and number of drives
+            string listOfDrives = string.Empty;
             string[] strDrives = Environment.GetLogicalDrives();
             int numberOfDrives = strDrives.Length;
             StringBuilder DrivesBuilder = new StringBuilder();
@@ -160,7 +181,10 @@ namespace SystemInfoCollector
 
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         #region IPAddress
 
         public string getIpAddress()
@@ -204,7 +228,9 @@ namespace SystemInfoCollector
         }
 
         #endregion
-
+        /// <summary>
+        /// 
+        /// </summary>
         #region DisplayIPAddress
 
         public void DisplayIPAddresses()
@@ -286,8 +312,140 @@ namespace SystemInfoCollector
         #endregion
 
 
-        //WMI - Queries
+        //[pending Exception Checking]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        #region SystemDriveFreeSpace
 
+        public decimal SystemDriveFreeSpace()
+        {
+            DriveInfo d = new DriveInfo(Path.GetPathRoot(
+            Environment.SystemDirectory));
+            //System.Windows.Forms.MessageBox.Show(((long)d.TotalFreeSpace / (long)d.TotalSize)).ToString());
+            //(long)d.TotalFreeSpace / (long)d.TotalSize);
+            decimal totalSize =
+                (decimal)d.TotalSize;
+            decimal totalFreeSpace = (decimal)d.TotalFreeSpace;
+
+            decimal percentFreeSpace = (totalFreeSpace / totalSize) * 100;
+
+
+            return Math.Round(percentFreeSpace, 3);
+
+
+        }
+
+        #endregion
+
+        
+       
+        //[pending Exception Checking]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        #region IEVersion
+
+        public string GetIEVersion()
+        {
+            string key = @"Software\Microsoft\Internet Explorer";
+            string data = string.Empty;
+            try
+            {
+                Microsoft.Win32.RegistryKey dkey =
+                    Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                    key,
+                     Microsoft.Win32.RegistryKeyPermissionCheck.Default);
+
+
+
+
+                data = dkey.GetValue("Version").ToString();
+            }
+
+            catch(Exception eXception)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    eXception.Message + "\n"
+                    + eXception.StackTrace + "\n"
+                    );
+            }
+                return data;
+        }
+
+
+        #endregion   
+
+       
+        #region GetHibernationStatus
+
+        /// <summary>
+        ///
+        /// BOOLEAN WINAPI IsPwrHibernateAllowed(void);
+        ///
+        /// </summary>
+        ///
+        /// <returns>
+        /// True - if hibernation Enabled
+        /// False - if hibernation disabled
+        /// </returns>
+
+        [DllImport("powrprof.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool IsPwrHibernateAllowed();
+
+
+        /// <summary>
+        /// alternate Function to check if hibernation is enabled
+        /// </summary>
+        /// [url][http://msdn.microsoft.com/en-us/library/aa372705(v=vs.85).aspx]
+        /// <returns></returns>
+
+
+
+
+
+
+        /// <summary>
+        /// isHibernationEnabled()
+        /// </summary>
+        /// [url][http://msdn.microsoft.com/en-us/library/aa372705(v=vs.85).aspx]
+        /// <returns>
+        /// onSuccess -- > string returned by IsPwrHibernateAllowed() [bool converted to string]
+        /// onFailure -- > returns <Failed to retreive Hibernation Status>
+        /// </returns>
+        public string isHibernationEnabled()
+        {
+            string HiberEnabled = string.Empty;
+            bool resultOfFun = IsPwrHibernateAllowed();
+            //check lastError
+            int errorOfFunc = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+            //check if there was an error
+            if (errorOfFunc != 0)
+            {
+                HiberEnabled = "<Failed to retreive Hibernation Status>";
+            }
+
+            else
+            {
+                HiberEnabled = resultOfFun.ToString();
+            }
+
+            return HiberEnabled;
+        }
+
+
+        #endregion
+
+
+
+        //WMI - Queries
+        /// <summary>
+        /// getSystemManufacturer
+        /// </summary>
+        /// <returns>manufacturerName</returns>
         #region SystemManufacturer
 
         public string getSystemManufacturer()
@@ -295,6 +453,9 @@ namespace SystemInfoCollector
             connectionOptions.Impersonation =
                        System.Management.ImpersonationLevel.Impersonate;
             scope.Connect();
+
+            string manufacturerName = string.Empty;
+
             try 
             {
             //Query system for Operating System information
@@ -329,7 +490,12 @@ namespace SystemInfoCollector
         #endregion
 
 
-
+        /// <summary>
+        /// getVideoCardName
+        /// </summary>
+        /// <returns>
+        /// videoCardName
+        /// </returns>
         #region VideoCardName
 
         public string getVideoCardName()
@@ -337,6 +503,9 @@ namespace SystemInfoCollector
             connectionOptions.Impersonation =
                        System.Management.ImpersonationLevel.Impersonate;
             scope.Connect();
+
+            string videoCardName = string.Empty;
+
             try
             {
                 //Query system for Operating System information
@@ -371,7 +540,12 @@ namespace SystemInfoCollector
 
         #endregion
 
-
+        /// <summary>
+        /// getOSVersion
+        /// </summary>
+        /// <returns>
+        /// _getOSVersion
+        /// </returns>
         #region OS Version
 
         public string getOSVersion()
@@ -379,6 +553,9 @@ namespace SystemInfoCollector
             connectionOptions.Impersonation =
                        System.Management.ImpersonationLevel.Impersonate;
             scope.Connect();
+
+            string _getOSVersion = string.Empty;
+
             try
             {
                 //Query system for Operating System information
@@ -413,6 +590,14 @@ namespace SystemInfoCollector
 
         #endregion
 
+
+
+        /// <summary>
+        /// getSystemUptime
+        /// </summary>
+        /// <returns>
+        /// _SystemUptime
+        /// </returns>
         #region SystemUptime
 
         public string getSystemUptime()
@@ -421,7 +606,7 @@ namespace SystemInfoCollector
                        System.Management.ImpersonationLevel.Impersonate;
             scope.Connect();
 
-            
+           string _SystemUptime = string.Empty;
 
             try
             {
@@ -463,10 +648,159 @@ namespace SystemInfoCollector
 
         #endregion
 
+        
+        
+        
+       
+        /// <summary>
+        /// getSystemManufacturer //with model and pc name
+        /// </summary>
+        /// <param name="pcModel"></param>
+        /// <param name="pcName"></param>
+        /// <param name="pcTotalPhysicalMemory"></param>
+        /// <param name="pcUserName"></param>
+        /// <returns>
+        ///  <param name="manufacturerName"></param>
+        /// </returns>
+        #region SystemManufacturer,pcModel,pcName,pcTotalPhysicalMemory,["UserName"]
+        
+        public string getSystemManufacturer(
+            out string pcModel, out string pcName, out string pcTotalPhysicalMemory, out string pcUserName)
+        {
+            connectionOptions.Impersonation =
+                       System.Management.ImpersonationLevel.Impersonate;
+            scope.Connect();
+
+            string manufacturerName = string.Empty;
+            //with model and pc name
+            pcModel = string.Empty;
+            pcName = string.Empty;
+            pcTotalPhysicalMemory = string.Empty;
+            pcUserName = string.Empty;
+
+            try
+            {
+                //Query system for Operating System information
+                ObjectQuery query = new ObjectQuery(
+                    "SELECT * FROM Win32_ComputerSystem");
+                ManagementObjectSearcher searcher =
+                    new ManagementObjectSearcher(scope, query);
+
+                ManagementObjectCollection queryCollection =
+                    searcher.Get();
+
+                foreach (ManagementObject m in queryCollection)
+                {
+                    // get computer information Manufacturer
+                    manufacturerName =
+                        m["Manufacturer"].ToString();
+                    pcModel = m["Model"].ToString();
+                    pcName = m["Name"].ToString();
+                    //pcTotalPhysicalMemory = m["TotalPhysicalMemory"].ToString();
+
+                    pcTotalPhysicalMemory = Math.Round(
+                        Convert.ToDecimal(
+                        m["TotalPhysicalMemory"].ToString()
+                        ) / (1024 * 1024 * 1024), 2) + " GB ";
+
+                    pcUserName = m["UserName"].ToString();
+
+                }
+            }
+
+            catch (ManagementException exception)
+            {
+                manufacturerName = "Unable to Read";
+                pcModel = "Unable to Read";
+                pcName = "Unable to Read";
+                pcTotalPhysicalMemory = "Unable to Read";
+                pcUserName = "Unable to Read";
+                System.Diagnostics.Debug.WriteLine(exception);
+            }
+
+
+            return manufacturerName;
+
+        }
+
+        #endregion
 
 
 
+        /// <summary>
+        /// getProcessorInfo
+        /// </summary>
+        /// <param name="CurrentClockSpeed"></param>
+        /// <param name="processorManufacturer"></param>
+        /// <param name="MaxClockSpeed"></param>
+        /// <returns>
+        /// <param name ="processorName"></param>
+        /// </returns>
+        #region ProcessorInfo - processorName,CurrentClockSpeed,processorManufacturer,MaxClockSpeed
 
+        public string getProcessorInfo(
+            out string CurrentClockSpeed,
+            out string processorManufacturer,
+            out string MaxClockSpeed
+            )
+        {
+            connectionOptions.Impersonation =
+                       System.Management.ImpersonationLevel.Impersonate;
+            scope.Connect();
+
+            string processorName = string.Empty;
+            CurrentClockSpeed = string.Empty;
+            processorManufacturer = string.Empty;
+            MaxClockSpeed = string.Empty;
+
+            try
+            {
+                //Query system for Operating System information
+                ObjectQuery query = new ObjectQuery(
+                    "SELECT * FROM Win32_Processor");
+                ManagementObjectSearcher searcher =
+                    new ManagementObjectSearcher(scope, query);
+
+                ManagementObjectCollection queryCollection =
+                    searcher.Get();
+
+                foreach (ManagementObject m in queryCollection)
+                {
+                    // get processorInfo
+                    processorName =
+                        m["Name"].ToString();
+
+                    CurrentClockSpeed =
+                       m["CurrentClockSpeed"].ToString();
+
+                    processorManufacturer =
+                        m["Manufacturer"].ToString();
+
+                    MaxClockSpeed =
+                        m["MaxClockSpeed"].ToString();
+
+
+
+                }
+            }
+
+            catch (ManagementException exception)
+            {
+                processorName = "Unable to Read";
+                CurrentClockSpeed = "Unable to Read";
+                processorManufacturer = "Unable to Read";
+                MaxClockSpeed = "Unable to Read";
+
+                System.Diagnostics.Debug.WriteLine(exception);
+            }
+
+
+            return processorName;
+
+        }
+
+
+        #endregion
 
 
 

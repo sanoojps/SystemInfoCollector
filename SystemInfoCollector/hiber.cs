@@ -251,79 +251,80 @@ namespace SystemInfoCollector
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct SYSTEM_POWER_CAPABILITIES
         {
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool PowerButtonPresent;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool SleepButtonPresent;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool LidPresent;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool SystemS1;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool SystemS2;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool SystemS3;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool SystemS4;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool SystemS5;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool HiberFilePresent;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool FullWake;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool VideoDimPresent;
             
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool ApmPresent;
             
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool UpsPresent;
             
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool ThermalControl;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool ProcessorThrottle;
 
             public byte ProcessorMinThrottle;
 
             public byte ProcessorMaxThrottle;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool FastSystemS4;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool HiberBoot;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool WakeAlarmPresent;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool AoAc;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool DiskSpinDown;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
             private byte[] spare3;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool SystemBatteriesPresent;
 
-            [MarshalAs(UnmanagedType.Bool)]
+            [MarshalAs(UnmanagedType.I1)]
             public bool BatteriesAreShortTerm;
 
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
             public BATTERY_REPORTING_SCALE[] BatteryScale;
 
             public SYSTEM_POWER_STATE AcOnLineWake;
@@ -353,8 +354,9 @@ namespace SystemInfoCollector
         ///</summary>
 
 
-    
-         public bool _PowerButtonPresent
+        #region SYSTEM_POWER_CAPABILITIES getters
+
+        public bool _PowerButtonPresent
         {
             get
             {
@@ -626,6 +628,8 @@ namespace SystemInfoCollector
 
         }
 
+        #endregion
+
 
         #endregion
 
@@ -656,85 +660,152 @@ namespace SystemInfoCollector
          ///</returns>
 
          [DllImport("PowrProf.dll", SetLastError = true, CharSet = CharSet.Auto)]
-         [return: MarshalAs(UnmanagedType.Bool)]
+         [return: MarshalAs(UnmanagedType.I1)]
          public static extern bool GetPwrCapabilities(
              out SYSTEM_POWER_CAPABILITIES _SYSTEM_POWER_CAPABILITIES);
 
+         //doesnt yield the resylt i expected initially (WTF) 
+         //Working Properly Now
 
-         public int getPowerCapabilities()
+         /// <summary>
+         /// getPowerCapabilities - 
+         /// If the function succeeds, the return value is nonzero.
+         /// If the function fails, the return value is zero. To get extended error information
+
+         /// </summary>
+         /// <returns>
+         /// HiberEnabled
+         /// </returns>
+         public string getPowerCapabilities()
          {
-             
+             string HiberEnabled = string.Empty;
              bool result = GetPwrCapabilities(out _SYSTEM_POWER_CAPABILITIES);
-            
+             int errorOfFunc = Convert.ToInt32(
+              System.Runtime.InteropServices.Marshal.GetLastWin32Error());
 
-             System.Diagnostics.Debug.WriteLine(
-                 "Function run status : "+ result
-                 +"\n"
-                  + "PowerButtonPresent : " + this._PowerButtonPresent
-                 + "\n"
-                 + "_SleepButtonPresent : " + this._SleepButtonPresent
-                  + "\n"
-                  + "_LidPresent : " + this._LidPresent
-                   + "\n"
-                   + "_SystemS1 : " + this._SystemS1
-                    + "\n"
-                    + "_SystemS2 : " + this._SystemS2
-                     + "\n"
-                     + "_SystemS3 : " + this._SystemS3
-                      + "\n"
-                      + "_SystemS4 : " + this._SystemS4
-                       + "\n"
-                      + "_SystemS5 : " + this._SystemS5
-                        + "\n"
-                        + "_HiberFilePresent : " + this._HiberFilePresent
-                         + "\n"
-                         + "_FullWake : " + this._FullWake
-                          + "\n"
-                          + "_VideoDimPresent : " + this._VideoDimPresent
-                           + "\n"
-                          + "_ApmPresent : " + this._ApmPresent
-                            + "\n"
-                           + "_UpsPresent : " + this._UpsPresent
-                             + "\n"
-                            + "_ThermalControl : " + this._ThermalControl
-                              + "\n"
-                            + "_ProcessorThrottle : " + this._ProcessorThrottle
-                               + "\n"
-                              + "_ProcessorMinThrottle : " + this._ProcessorMinThrottle
-                                + "\n"
-                               + "ProcessorMaxThrottle : " + this._ProcessorMaxThrottle
-                                 + "\n"
-                                + "_FastSystemS4 : " + this._FastSystemS4
-                                  + "\n"
-                                 + "_HiberBoot : " + this._HiberBoot
-                                   + "\n"
-                                  + "_WakeAlarmPresent : " + this._WakeAlarmPresent
-                                    + "\n"
-                                   + "_AoAc : " + this._AoAc
-                                     + "\n"
-                                     + "_DiskSpinDown : " + this._DiskSpinDown
-                                      + "\n"
-                                      + "_SystemBatteriesPresent : " + this._SystemBatteriesPresent
-                                       + "\n"
-                                      + "_BatteriesAreShortTerm : " + this._BatteriesAreShortTerm
-                                        + "\n"
-                                       + "_BatteryScale : " + this._BatteryScale
-                                         + "\n"
-                                        + "_AcOnLineWake : " + this._AcOnLineWake
-                                         +"\n"
-                                        + "_SoftLidWake : " + this._SoftLidWake
-                                         +"\n"
-                                        + "_RtcWake : " + this._RtcWake
-                                         +"\n"
-                                       + "_MinDeviceWakeState : " + this._MinDeviceWakeState
-                                         +"\n"
-                                       + "_DefaultLowLatencyWake : " + this._DefaultLowLatencyWake
-                                         +"\n"
-                           
-                 );
-             return Convert.ToInt32(
-             System.Runtime.InteropServices.Marshal.GetLastWin32Error()); 
+             if (errorOfFunc != 0 && result != false)
+             {
+                 HiberEnabled = "<Failed to retreive Hibernation Status>";
+             }
+
+             else
+             {
+                 HiberEnabled = _HiberFilePresent.ToString();
+             }
+
+             //System.Diagnostics.Debug.WriteLine(
+             //    "Function run status : " + result
+             //    + "\n"
+             //     + "PowerButtonPresent : " + this._PowerButtonPresent
+             //    + "\n"
+             //    + "_SleepButtonPresent : " + this._SleepButtonPresent
+             //     + "\n"
+             //     + "_LidPresent : " + this._LidPresent
+             //      + "\n"
+             //      + "_SystemS1 : " + this._SystemS1
+             //       + "\n"
+             //       + "_SystemS2 : " + this._SystemS2
+             //        + "\n"
+             //        + "_SystemS3 : " + this._SystemS3
+             //         + "\n"
+             //         + "_SystemS4 : " + this._SystemS4
+             //          + "\n"
+             //         + "_SystemS5 : " + this._SystemS5
+             //           + "\n"
+             //           + "_HiberFilePresent : " + this._HiberFilePresent
+             //            + "\n"
+             //            + "_FullWake : " + this._FullWake
+             //             + "\n"
+             //             + "_VideoDimPresent : " + this._VideoDimPresent
+             //              + "\n"
+             //             + "_ApmPresent : " + this._ApmPresent
+             //               + "\n"
+             //              + "_UpsPresent : " + this._UpsPresent
+             //                + "\n"
+             //               + "_ThermalControl : " + this._ThermalControl
+             //                 + "\n"
+             //               + "_ProcessorThrottle : " + this._ProcessorThrottle
+             //                  + "\n"
+             //                 + "_ProcessorMinThrottle : " + this._ProcessorMinThrottle
+             //                   + "\n"
+             //                  + "ProcessorMaxThrottle : " + this._ProcessorMaxThrottle
+             //                    + "\n"
+             //                   + "_FastSystemS4 : " + this._FastSystemS4
+             //                     + "\n"
+             //                    + "_HiberBoot : " + this._HiberBoot
+             //                      + "\n"
+             //                     + "_WakeAlarmPresent : " + this._WakeAlarmPresent
+             //                       + "\n"
+             //                      + "_AoAc : " + this._AoAc
+             //                        + "\n"
+             //                        + "_DiskSpinDown : " + this._DiskSpinDown
+             //                         + "\n"
+             //                         + "_SystemBatteriesPresent : " + this._SystemBatteriesPresent
+             //                          + "\n"
+             //                         + "_BatteriesAreShortTerm : " + this._BatteriesAreShortTerm
+             //                           + "\n"
+             //                          + "_BatteryScale : " + this._BatteryScale
+             //                            + "\n"
+             //                           + "_AcOnLineWake : " + this._AcOnLineWake
+             //                            + "\n"
+             //                           + "_SoftLidWake : " + this._SoftLidWake
+             //                            + "\n"
+             //                           + "_RtcWake : " + this._RtcWake
+             //                            + "\n"
+             //                          + "_MinDeviceWakeState : " + this._MinDeviceWakeState
+             //                            + "\n"
+             //                          + "_DefaultLowLatencyWake : " + this._DefaultLowLatencyWake
+             //                            + "\n"
+
+             //    );
+             return HiberEnabled;
          }
+
+
+        /// <summary>
+        ///
+         /// BOOLEAN WINAPI IsPwrHibernateAllowed(void);
+         ///
+        /// </summary>
+        ///
+        /// <returns>
+        /// True - if hibernation Enabled
+        /// False - if hibernation disabled
+        /// </returns>
+        
+         [DllImport("powrprof.dll", SetLastError = true, CharSet = CharSet.Auto)]
+         [return: MarshalAs(UnmanagedType.I1)] 
+        static extern bool IsPwrHibernateAllowed();
+
+
+        /// <summary>
+        /// alternate Function to check if hibernation is enabled
+        /// </summary>
+         /// /// [url][http://msdn.microsoft.com/en-us/library/aa372705(v=vs.85).aspx]
+        /// <returns></returns>
+         public string isHibernationEnabled()
+         {
+             string HiberEnabled = string.Empty;
+             bool resultOfFun = IsPwrHibernateAllowed();
+             int errorOfFunc = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+
+             if (errorOfFunc != 0)
+             {
+                 HiberEnabled = "<Failed to retreive Hibernation Status>";
+             }
+
+             else
+             {
+                 HiberEnabled = resultOfFun.ToString();
+             }
+
+             return HiberEnabled;
+         }
+
+
+
+
+       
       
 
 
