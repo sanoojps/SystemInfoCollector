@@ -100,7 +100,7 @@ namespace SystemInfoCollector
 
 
         /// <summary>
-        /// 
+        /// ComputerName
         /// </summary>
         /// <returns></returns>
         #region ComputerName
@@ -116,10 +116,9 @@ namespace SystemInfoCollector
         #endregion
 
 
-        /// <summary>
-        /// 
+        /// <summary>SystemPartition
         /// </summary>
-        /// <returns></returns>
+        /// <returns>SystemPartition</returns>
         #region SystemPartition
 
         public string getSystemPartition()
