@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="AddScheduledTask.cs" />
     <Compile Include="backgroundWorker.cs" />
+    <Compile Include="DirSize.cs" />
     <Compile Include="GetSystemInfo.cs" />
     <Compile Include="hiber.cs" />
     <Compile Include="powerInfo.cs" />
